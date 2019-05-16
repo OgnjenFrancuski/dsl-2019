@@ -19,6 +19,40 @@ Model SomeModel sm1
     l = [[], range(10), 2, 'sdf'];
 }
 
+
+Wrapper w1
+{
+    model = sm1;
+    input_size = 10;
+    output = AVG;
+}
+
+
+Wrapper w2
+{
+    model = SomeModel
+    {
+        p1 = "str";
+        p2 = 0.4;
+        p3 = 10;
+        a = range(10);
+        b = range(2, 10);
+        c = range(2, 10, 2);
+        l = [[], range(10), 2, 'sdf'];
+    };
+    input_size = 10;
+    output = CUSTOM;
+}
+
+
+Stacking s1
+{
+    w1 -> w2;
+    m1 -> m2;
+    m3 -> m4;
+}
+
+
 Train
 {
     x = data;
