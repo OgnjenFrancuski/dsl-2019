@@ -1,0 +1,10 @@
+Model SomeModel sm1
+{
+    p1 = "str";
+    p2 = 0.4;
+    p3 = 10;
+    a = range(10);
+    b = range(2, 10);
+    c = range(2, 10, 2);
+    l = [[], range(10), 2, 'sdf'];
+}

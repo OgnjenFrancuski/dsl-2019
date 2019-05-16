@@ -1,0 +1,56 @@
+// FILE ================================================================================================================
+
+File:
+    model_expressions *= Expression
+;
+
+
+Expression:
+    Model
+;
+
+
+// MODEL RULES =========================================================================================================
+
+Model:
+  'Model' type=ID name=ID
+  '{'
+        params *= Param
+  '}'
+;
+
+
+AnonymousModel:
+    type=ID
+    '{'
+        params *= Param
+    '}'
+;
+
+
+// UTILITY RULES =======================================================================================================
+
+Param:
+  name=ID '=' Value ';'
+;
+
+
+Value:
+    Range | List | STRING | FLOAT | INT | ID
+;
+
+
+Range:
+    'range(' (start=INT ',')? stop=INT ')'
+    | 'range(' start=INT ',' stop=INT ',' step=INT ')'
+;
+
+
+List:
+    '[' num*=Value[','] ']'
+;
+
+
+Comment:
+  /\/\/.*$/
+;
