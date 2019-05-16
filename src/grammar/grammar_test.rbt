@@ -1,3 +1,13 @@
+Data train_data
+{
+    path = '~/PycharmProjects/fax/dsl-2019/dataset.csv';
+    test_size = 0.2;
+    outlier = ISF;
+    missing_values = MEAN;
+    validation_size = 0.4;
+    normalization = Z_SCORE;
+}
+
 Model SomeModel sm1
 {
     p1 = "str";

@@ -1,12 +1,29 @@
 // FILE ================================================================================================================
 
 File:
-    model_expressions *= Expression
+    data_expressions  *= Data              // expressions for loading data
+    model_expressions *= Expression        // expressions for defining models
 ;
 
 
 Expression:
     Model
+;
+
+// DATA RULES ==========================================================================================================
+
+Data:
+    'Data' name=ID
+    '{'
+        'path' '=' path=STRING ';'
+        (
+            ('test_size' '='        test_size=FLOAT                     ';')? |
+            ('validation_size' '='  validation_size=FLOAT               ';')? |
+            ('missing_values' '='   missing_values=MissingValuesMethod  ';')? |
+            ('normalization' '='    normalization=NormalizationMethod   ';')? |
+            ('outlier' '='          outlier=OutlierRemovalMethod        ';')?
+        )#
+    '}'
 ;
 
 
@@ -53,4 +70,21 @@ List:
 
 Comment:
   /\/\/.*$/
+;
+
+
+// CONSTANTS RULES =====================================================================================================
+
+MissingValuesMethod:
+    'MEAN' | 'MEDIAN'
+;
+
+
+NormalizationMethod:
+    'Z_SCORE' | 'MINMAX'
+;
+
+
+OutlierRemovalMethod:
+    'ISF' | 'LOF'
 ;
