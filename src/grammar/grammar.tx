@@ -3,12 +3,19 @@
 File:
     data_expressions  *= Data              // expressions for loading data
     model_expressions *= Expression        // expressions for defining models
+    run_expressions *= RunExpression       // run configuration for training / testing
 ;
 
 
 Expression:
     Model
 ;
+
+
+RunExpression:
+    Train | Test
+;
+
 
 // DATA RULES ==========================================================================================================
 
@@ -41,6 +48,50 @@ AnonymousModel:
     type=ID
     '{'
         params *= Param
+    '}'
+;
+
+
+// TEST AND TRAIN RULES ================================================================================================
+
+
+Train:
+    'Train'
+    '{'
+        (
+            // required attributes for training
+
+            ('x' '='        train_x=ID        ';') |
+            ('y' '='        train_y=ID        ';') |
+            ('models' '='   models=List ';') |
+            ('score' '='    score=Score ';') |
+
+            // optional attributes for training
+
+            ('verbose' '='      verbose=INT   ';')? |
+            ('seed' '='         seed=INT      ';')? |
+            ('cross_validation'
+             '{'
+                 (
+                    ('folds' '=' folds=INT ';') |
+                    ('params' '{' params *= Param '}' ';')
+
+                 )#
+             '}' ';'
+            )?
+        )#
+    '}'
+;
+
+
+Test:
+    'Test'
+    '{'
+        (
+            ('x' '='        test_x=ID   ';') |
+            ('y' '='        test_y=ID   ';') |
+            ('models' '='   models=List ';')
+        )#
     '}'
 ;
 
@@ -87,4 +138,9 @@ NormalizationMethod:
 
 OutlierRemovalMethod:
     'ISF' | 'LOF'
+;
+
+
+Score:
+    'ACCURACY' | 'F1-MICRO' | 'F1-MACRO'
 ;
