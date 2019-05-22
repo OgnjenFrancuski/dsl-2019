@@ -1,7 +1,7 @@
 // >> FILE =============================================================================================================
 
 File:
-    data_expressions  *= Data              // expressions for loading data
+    data_expression = Data                 // expression for loading and preprocessing data
     model_expressions *= Expression        // expressions for defining models
     run_expressions *= RunExpression       // run configuration for training / testing
 ;
@@ -25,8 +25,9 @@ RunExpression:
 Data:
     'Data' name=ID
     '{'
-        'path' '=' path=STRING ';'
         (
+            ('path' '='             path=STRING                         ';')  |
+            ('label_column' '='     label_column=STRING                 ';')  |
             ('test_size' '='        test_size=FLOAT                     ';')? |
             ('validation_size' '='  validation_size=FLOAT               ';')? |
             ('missing_values' '='   missing_values=MissingValuesMethod  ';')? |
@@ -171,7 +172,13 @@ Comment:
 // >> CONSTANTS RULES ==================================================================================================
 
 MissingValuesMethod:
-    'MEAN' | 'MEDIAN'
+    'MEAN'                      |
+    'MEDIAN'                    |
+    'KNN'                       |
+    'NUCLEAR_NORM_MINIMIZATION' |
+    'SOFT'                      |
+    'ITERATIVE'                 |
+    'BI_SCALER'
 ;
 
 

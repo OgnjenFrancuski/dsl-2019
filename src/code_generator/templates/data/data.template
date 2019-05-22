@@ -1,0 +1,51 @@
+def read_data(file_path):
+    """
+    Reads and preprocess data from given file path
+    :param file_path:
+    :return:
+    """
+    label_col = 'variety'
+
+    df = pd.read_csv(file_path)
+    {% if data.missing_values %}
+    df = _missing_values(df, label_col)
+    {% endif %}
+    {% if data.outlier %}
+    df = _outlier_removal(df, label_col)
+    {% endif %}
+
+    y = np.ravel(df[label_col])
+    X = df.drop(label_col, axis=1).values
+
+    {% if data.test_size %}
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size={{data.test_size}}, random_state=42)
+    {% endif %}
+    {% if data.validation_size %}
+    X_train, X_val, y_train, y_val = train_test_split(X_train, y_train, test_size={{data.validation_size}}, random_state=42)
+    {% endif %}
+
+    {% if data.normalization == 'Z_SCORE' %}
+    scaler = StandardScaler()
+    {% elif data.normalization == 'MINNAX' %}
+    scaler = MinMaxScaler()
+    {% else %}
+    {% endif %}
+
+    {% if data.normalization %}
+    {% if not data.test_size %}
+    X = scaler.fit_transform(X)
+    {% else %}
+    X_train = scaler.fit_transform(X_train)
+    X_test = scaler.transform(X_test)
+    {% if data.validation_size %}
+    X_val = scaler.transform(X_val)
+    {% endif %}
+    {% endif %}
+    {% endif %}
+    {% if not data.test_size %}
+    return X, y
+    {% elif data.test_size and not data.validation_size %}
+    return X_train, X_test, y_train, y_test
+    {% else %}
+    return X_train, X_val, X_test, y_train, y_val, y_test
+    {% endif %}
