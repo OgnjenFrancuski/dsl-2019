@@ -1,0 +1,4 @@
+class RandomForest(Model):
+    def __init__(self, **model_params):
+        super(RandomForest, self).__init__()
+        self.model = RandomForestClassifier(**model_params)
