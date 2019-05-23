@@ -43,11 +43,37 @@ Data:
 
 // >> MODEL RULES ======================================================================================================
 
+
 Model:
   'Model' type=ID name=ID
-  '{'
+  (CvModelParams | ModelParams)
+;
+
+
+ModelParams:
+    '{'
         params *= Param
-  '}'
+    '}'
+;
+
+
+CvModelParams:
+    'useCrossValidation'
+    '{'
+        'folds' '=' folds=INT ';'
+        params *= CvParam
+    '}'
+;
+
+
+AnonymousModel:
+    '{'
+        ((params *= Param) |
+        (
+            ('folds' '=' folds=INT ';') |
+            ('params' '{' params *= CvParam '}' ';')
+        )#)
+    '}'
 ;
 
 
@@ -63,14 +89,6 @@ Wrapper:
 
 ModelWrapper:
     AnonymousModel | ID
-;
-
-
-AnonymousModel:
-    type=ID
-    '{'
-        params *= Param
-    '}'
 ;
 
 
@@ -102,21 +120,11 @@ Train:
             ('x' '='        train_x=ID        ';') |
             ('y' '='        train_y=ID        ';') |
             ('models' '='   models=List ';') |
-            ('score' '='    score=Score ';') |
 
             // optional attributes for training
 
             ('verbose' '='      verbose=INT   ';')? |
-            ('seed' '='         seed=INT      ';')? |
-            ('cross_validation'
-             '{'
-                 (
-                    ('folds' '=' folds=INT ';') |
-                    ('params' '{' params *= Param '}' ';')
-
-                 )#
-             '}' ';'
-            )?
+            ('seed' '='         seed=INT      ';')?
         )#
     '}'
 ;
@@ -141,12 +149,22 @@ Test:
 // >> UTILITY RULES ====================================================================================================
 
 Param:
-    name=ID '=' Value ';'
+    name=ID '=' value=SimpleValue ';'
 ;
 
 
-Value:
-    Range | List | STRING | FLOAT | INT | ID
+CvParam:
+    name=ID '=' value=CollectionValue ';'
+;
+
+
+CollectionValue:
+    Range | List
+;
+
+
+SimpleValue:
+     STRING | FLOAT | INT | ID
 ;
 
 
@@ -157,7 +175,7 @@ Range:
 
 
 List:
-    '[' num*=Value[','] ']'
+    '[' num*=SimpleValue[','] ']'
 ;
 
 
