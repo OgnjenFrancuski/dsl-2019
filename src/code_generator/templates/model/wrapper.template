@@ -1,0 +1,56 @@
+class ModelWrapper:
+
+    def __init__(self, model, input_size):
+        self.model = model
+        self.input_size = input_size
+
+
+    def fit(self, x_train, y_train, **fit_params):
+        self.model.fit(x_train, y_train, **fit_params)
+
+
+    {% if outputs|length > 1 %}
+    def predict(self, inputs, output='all'):
+    {% else %}
+    def predict(self, inputs):
+    {% endif %}
+        if len(inputs) != self.input_size:
+            raise Exception('Input size don\'t match. Given size {}, expected {}'.format(len(inputs), self.input_size))
+
+        y_pred = self.model.predict(inputs)
+
+        {% if outputs|length == 1 %}
+        {% if 'CUSTOM' in outputs %}
+        y_pred = self._output(y_pred)
+        {% elif 'VOTING' in outputs %}
+        y_pred = self._output_voting(y_pred)
+        {% else %}{% endif %}
+        return y_pred
+        {% else %}
+        {% if 'CUSTOM' in outputs %}
+        if output == 'custom':
+            y_pred = self._output(y_pred)
+        {% endif %}
+        {% if 'VOTING' in outputs %}
+        if output == 'voting':
+            y_pred = self._output_voting(y_pred)
+        {% endif %}
+        return y_pred
+        {% endif %}
+
+
+    {% if 'VOTING' in outputs %}
+    def _output_voting(self, y_pred):
+        return np.bincount(y_pred).argmax()
+    {% endif %}
+
+
+    {% if 'CUSTOM' in outputs %}
+    def _output(self, y_pred):
+        # TODO: Implement custom output function
+        pass
+    {% endif %}
+
+
+    def evaluate(self, y, y_predicted):
+        self.model.evaluate(y, y_predicted)

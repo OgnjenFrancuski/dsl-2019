@@ -2,80 +2,86 @@ Data data
 {
     path = '~/PycharmProjects/fax/dsl-2019/dataset.csv';
     test_size = 0.2;
+    validation_size = 0.4;
+    outlier = ISF;
+    missing_values = KNN;
+    label_column = 'variety';
+}
+
+
+Data data2
+{
+    path = '~/PycharmProjects/fax/dsl-2019/dataset.csv';
+    test_size = 0.1;
+    validation_size = 0.3;
     outlier = ISF;
     missing_values = MEAN;
-    validation_size = 0.4;
-    normalization = Z_SCORE;
+    label_column = 'variety';
 }
 
-Model SomeModel sm1
+Data pera
 {
-    p1 = "str";
-    p2 = 0.4;
-    p3 = 10;
-    a = range(10);
-    b = range(2, 10);
-    c = range(2, 10, 2);
-    l = [[], range(10), 2, 'sdf'];
+    path = '~/PycharmProjects/fax/dsl-2019/dataset.csv';
+    test_size = 0.2;
+    validation_size = 0.5;
+    outlier = ISF;
+    missing_values = MEDIAN;
+    label_column = 'variety';
+}
+
+Model NaiveBayes nb1
+{
+    folds=10;
+}
+
+Model XGBoost xg1
+{
+    folds=10;
+}
+
+Model XGBoost xg2
+{
+    folds=10;
+    p1=30;
+}
+
+Model XGBoost xg21
+{
+    folds=10;
+    p1=30;
+}
+
+Model RandomForest xg3
+{
+    folds=10;
+    p1=30;
+}
+
+Model XGBoost xg4
+{
+    folds=10;
+    p1=30;
+}
+
+ModelWrapper w1
+{
+    model=xg1;
+    input_size=100;
+    output=VOTING;
 }
 
 
-Wrapper w1
+ModelWrapper w2
 {
-    model = sm1;
-    input_size = 10;
-    output = AVG;
+    model=xg2;
+    input_size=500;
+    output=CUSTOM;
 }
 
 
-Wrapper w2
+ModelWrapper w3
 {
-    model = SomeModel
-    {
-        p1 = "str";
-        p2 = 0.4;
-        p3 = 10;
-        a = range(10);
-        b = range(2, 10);
-        c = range(2, 10, 2);
-        l = [[], range(10), 2, 'sdf'];
-    };
-    input_size = 10;
-    output = CUSTOM;
-}
-
-
-Stacking s1
-{
-    w1 -> w2;
-    m1 -> m2;
-    m3 -> m4;
-}
-
-
-Train
-{
-    x = data;
-    y = data;
-    models = [sm1, sm2, sm3];
-    score = F1-MICRO;
-    verbose=1;
-    seed=14;
-    cross_validation
-    {
-        folds=5;
-        params
-        {
-            p1=[1,2,3];
-            p2=[1,2,3];
-            p3=[1,2,3];
-        };
-    };
-}
-
-Test
-{
-    x = data;
-    y = data;
-    models = [sm1, sm2, sm3];
+    model= xg1;
+    input_size=300;
+    output=ALL;
 }

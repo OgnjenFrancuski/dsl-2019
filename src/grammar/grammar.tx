@@ -1,14 +1,14 @@
 // >> FILE =============================================================================================================
 
 File:
-    data_expression = Data                 // expression for loading and preprocessing data
-    model_expressions *= Expression        // expressions for defining models
-    run_expressions *= RunExpression       // run configuration for training / testing
+    data_expressions *= Data                 // expression for loading and preprocessing data
+    model_expressions *= Expression          // expressions for defining models
+    run_expressions *= RunExpression         // run configuration for training / testing
 ;
 
 
 Expression:
-    Model | Wrapper | Stacking
+    ModelWrapper | Model | Stacking
 ;
 
 
@@ -45,50 +45,21 @@ Data:
 
 
 Model:
-  'Model' type=ID name=ID
-  (CvModelParams | ModelParams)
-;
-
-
-ModelParams:
+    'Model' type=ID name=ID
     '{'
-        params *= Param
-    '}'
-;
-
-
-CvModelParams:
-    'useCrossValidation'
-    '{'
-        'folds' '=' folds=INT ';'
-        params *= CvParam
-    '}'
-;
-
-
-AnonymousModel:
-    '{'
-        ((params *= Param) |
-        (
-            ('folds' '=' folds=INT ';') |
-            ('params' '{' params *= CvParam '}' ';')
-        )#)
-    '}'
-;
-
-
-Wrapper:
-    'Wrapper' name=ID
-    '{'
-        'model' '='         model=ModelWrapper  ';'
-        'input_size' '='    input_size=INT      ';'
-        'output' '='        output=Output       ';'
+        ('cv_folds' '=' cv_folds=INT)?
+        params*=Param
     '}'
 ;
 
 
 ModelWrapper:
-    AnonymousModel | ID
+    'ModelWrapper' name=ID
+    '{'
+        'model' '='         model=ID        ';'
+        'input_size' '='    input_size=INT  ';'
+        'output' '='        output=Output   ';'
+    '}'
 ;
 
 
@@ -216,7 +187,7 @@ Score:
 
 
 Output:
-    'ALL' | 'AVG' | 'CUSTOM'
+    'ALL' | 'VOTING' | 'CUSTOM'
 ;
 
 // << CONSTANTS RULES ==================================================================================================

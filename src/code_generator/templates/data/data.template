@@ -1,17 +1,17 @@
-def read_data(file_path):
+def read_data_{{data.name}}():
     """
     Reads and preprocess data from given file path
     :param file_path:
     :return:
     """
-    label_col = 'variety'
+    label_col = '{{data.label_column}}'
 
-    df = pd.read_csv(file_path)
+    df = pd.read_csv('{{data.file_path}}')
     {% if data.missing_values %}
-    df = _missing_values(df, label_col)
+    df = _missing_values(df, label_col, method='{{data.missing_values.lower()}}')
     {% endif %}
     {% if data.outlier %}
-    df = _outlier_removal(df, label_col)
+    df = _outlier_removal(df, label_col, method='{{data.outlier.lower()}}')
     {% endif %}
 
     y = np.ravel(df[label_col])

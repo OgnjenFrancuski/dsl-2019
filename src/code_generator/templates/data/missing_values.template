@@ -1,38 +1,54 @@
-def _missing_values(df: pd.DataFrame, label_col, **add_params) -> pd.DataFrame:
+def _missing_values(df: pd.DataFrame, label_col, method, **add_params) -> pd.DataFrame:
     """
     Imputes missing values on given pandas DataFrame
     :param df: DataFrame
     :return: DataFrame
     """
 
-    {% if data.missing_values == 'MEAN' %}
-    return df.fillna(df.mean(), inplace=False)
-    {% elif data.missing_values == 'MEDIAN' %}
-    return df.fillna(df.median(), inplace=False)
-    {% else %}
+    {% if 'MEAN' in missing_values %}
+    if method == 'mean':
+        return df.fillna(df.mean(), inplace=False)
+    {% endif %}
+    {% if 'MEDIAN' in missing_values %}
+    if method == 'median':
+        return df.fillna(df.median(), inplace=False)
+    {% endif %}
+    {% if 'KNN' in missing_values or
+          'NUCLEAR_NORM_MINIMIZATION' in missing_values or
+          'ITERATIVE' in missing_values or
+          'SOFT' in missing_values or
+          'BI_SCALER' in missing_values %}
+
     # create arrays from dataframe
     y = df[label_col]
     df = df.drop(label_col, axis=1, inplace=False)
     feature_cols = list(df.columns)
     features = df.values
 
-    {% if data.missing_values == 'KNN' %}
-    imputer = KNN(**add_params)
-    {% elif data.missing_values == 'NUCLEAR_NORM_MINIMIZATION' %}
-    imputer = NuclearNormMinimization(**add_params)
-    {% elif data.missing_values == 'SOFT' %}
-    imputer = SoftImpute(**add_params)
-    {% elif data.missing_values == 'ITERATIVE' %}
-    imputer = IterativeImputer(**add_params)
-    {% elif data.missing_values == 'BI_SCALER' %}
-    imputer = BiScaler(**add_params)
+    {% if 'KNN' in missing_values %}
+    if method == 'knn':
+        imputer = KNN(**add_params)
+    {% endif %}{% if 'NUCLEAR_NORM_MINIMIZATION' in missing_values %}
+    if method == 'nuclear_norm_minimization':
+        imputer = NuclearNormMinimization(**add_params)
+    {% endif %}{% if 'ITERATIVE' in missing_values%}
+    if method == 'iterative':
+        imputer = IterativeImputer(**add_params)
+    {% endif %}{% if 'SOFT' in missing_values %}
+    if method == 'soft':
+        imputer = SoftImpute(**add_params)
+    {% endif %}{% if 'BI_SCALER' in missing_values%}
+    if method == 'bi_scaler':
+        imputer = BiScaler(**add_params)
     {% endif %}
+
+    else:
+        raise Exception('Imputer not available')
 
     # impute values
     features = imputer.fit_transform(features)
-
     ret_df = pd.DataFrame(features, columns=feature_cols)
     ret_df[label_col] = pd.Series(y)
+    {% endif %}
 
     return ret_df
-    {% endif %}
