@@ -1,0 +1,24 @@
+class ModelStacking:
+    def ___init__(input_models, output_model):
+        self.input_models = input_models
+        self.output_models = output_models
+
+    def fit(X, y):
+        input_predicted = []
+        for input_model in self.input_models:
+            input_model.fit(X, y)
+            y_pred = np.array(list(map(lambda y: input_model.lab2idx[y], y_pred)))
+            input_predicted.append(pd.Series(y_pred))
+
+        output_train_df = pd.DataFrame(input_predicted, axis=1)
+        output_model.fit(output_train_df)
+
+
+    def predict(X, y):
+        input_predicted = []
+        for input_model in self.input_models:
+            y_pred = np.array(list(map(lambda y: input_model.lab2idx[y], y_pred)))
+            input_predicted.append(pd.Series(y_pred))
+
+        output_train_df = pd.DataFrame(input_predicted, axis=1)
+        output_model.fit(output_train_df)

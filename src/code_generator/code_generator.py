@@ -2,9 +2,9 @@ import os
 import os.path as osp
 
 import jinja2
-from textx.metamodel import TextXMetaModel
 
-from src.settings import JINJA_DATA_TEMPLATE_DIR, OUTPUT_DIR, JINJA_MODEL_TEMPLATE_DIR, SUPPORTED_MODELS
+from src.settings import JINJA_DATA_TEMPLATE_DIR, OUTPUT_DIR, JINJA_MODEL_TEMPLATE_DIR, SUPPORTED_MODELS, \
+    JINJA_RUN_TEMPLATE_DIR
 
 
 def generate_data_code(data):
@@ -99,14 +99,54 @@ def generate_stacking_code(stacking_expressions):
     pass
 
 
-def generate_run_conf_code(train_confs, test_confs):
-    pass
+def generate_train_conf_code(models, stackings, train_confs):
+    if not (train_confs and (models or stackings)):
+        return
+
+    jinja_env = jinja2.Environment(
+        loader=jinja2.FileSystemLoader(JINJA_RUN_TEMPLATE_DIR),
+        trim_blocks=True,
+        lstrip_blocks=True)
+
+    import_tmpl = jinja_env.get_template('imports.template')
+    train_tmpl = jinja_env.get_template('train.template')
+
+    with open(osp.join(OUTPUT_DIR, 'train.py'), 'w') as f:
+        f.write(import_tmpl.render())
+        f.write('\n\n\n')
+        f.write(train_tmpl.render(models=models, stackings=stackings, train_confs=train_confs))
+
+
+def generate_test_conf_code(test_confs):
+    if not test_confs:
+        return
+
+    # jinja_env = jinja2.Environment(
+    #     loader=jinja2.FileSystemLoader(JINJA_MODEL_TEMPLATE_DIR),
+    #     trim_blocks=True,
+    #     lstrip_blocks=True)
+    #
+    # import_tmpl = jinja_env.get_template('imports.template')
+    # wrapper_tmpl = jinja_env.get_template('wrapper.template')
+    #
+    # # outputs for all wrappers
+    # outputs = set(map(lambda w: w.output, stacking_expressions))
+    #
+    # with open(osp.join(OUTPUT_DIR, 'wrapper.py'), 'w') as f:
+    #     f.write(import_tmpl.render())
+    #     f.write('\n\n\n')
+    #     f.write(wrapper_tmpl.render(outputs=outputs))
 
 
 def generate_code(data, models, wrappers, stackings, train_confs, test_confs):
     """
     Generates code from given meta model using Jinja templates
-    :param mm: TextXMetaModel
+    :param test_confs:
+    :param train_confs:
+    :param stackings:
+    :param wrappers:
+    :param models:
+    :param data:
     :return:
     """
     # Create the output folder
@@ -117,4 +157,5 @@ def generate_code(data, models, wrappers, stackings, train_confs, test_confs):
     generate_model_code(models)
     generate_wrapper_code(wrappers)
     generate_stacking_code(stackings)
-    generate_run_conf_code(train_confs, test_confs)
+    generate_train_conf_code(models, stackings, train_confs)
+    # generate_test_conf_code(models, stackings, train_confs)

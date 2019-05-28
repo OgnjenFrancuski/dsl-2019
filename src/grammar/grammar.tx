@@ -62,17 +62,12 @@ ModelWrapper:
     '}'
 ;
 
-
 Stacking:
     'Stacking' name=ID
     '{'
-        connections *= Connection
+        'input_models' '=' input_models=List    ';'
+        'output_model' '=' output_model=ID      ';'
     '}'
-;
-
-
-Connection:
-    first_model=ID '->' second_model=ID ';'
 ;
 
 // << MODEL RULES ======================================================================================================
@@ -83,14 +78,13 @@ Connection:
 // >> RUN CONFIGURATION RULES===========================================================================================
 
 Train:
-    'Train'
+    'Train' name=ID
     '{'
         (
             // required attributes for training
 
-            ('x' '='        train_x=ID        ';') |
-            ('y' '='        train_y=ID        ';') |
-            ('models' '='   models=List ';') |
+            ('data' '='     data=ID         ';') |
+            ('models' '='   models=List     ';') |
 
             // optional attributes for training
 
@@ -102,12 +96,11 @@ Train:
 
 
 Test:
-    'Test'
+    'Test' name=ID
     '{'
         (
-            ('x' '='        test_x=ID   ';') |
-            ('y' '='        test_y=ID   ';') |
-            ('models' '='   models=List ';')
+            ('data' '='         test_x=ID   ';') |
+            ('models' '='       models=List ';')
         )#
     '}'
 ;

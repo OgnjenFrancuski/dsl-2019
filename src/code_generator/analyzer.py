@@ -41,6 +41,7 @@ def update_wrapper_references(models, wrappers):
                 wrappers[wi].model = models[mi]
 
 
+
 def analyze_code(grammar_model):
 
     names = []
@@ -61,6 +62,9 @@ def analyze_code(grammar_model):
                 raise Exception('Param with name \'{}\' is defined more than once ({} times) in '
                                 'model / model wrapper with name \'{}\''
                                 .format(object_name, times, gm.name))
+
+        elif isinstance(gm, Train):
+            pass
 
 
 def update_references(grammar_model):
@@ -84,9 +88,9 @@ def update_references(grammar_model):
             stackings.append(gm)
 
     for gm in grammar_model.run_expressions:
-        if isinstance(gm, Train):
+        if gm._tx_fqn == 'grammar.Train':
             train_confs.append(gm)
-        if isinstance(gm, Test):
+        if gm._tx_fqn == 'grammar.Test':
             test_confs.append(gm)
 
     update_wrapper_references(models, wrappers)

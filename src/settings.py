@@ -12,6 +12,7 @@ OUTPUT_DIR = osp.join(BASE_DIR, 'output')
 JINJA_TEMPLATE_DIR = osp.join(BASE_DIR, 'src', 'code_generator', 'templates')
 JINJA_DATA_TEMPLATE_DIR = osp.join(JINJA_TEMPLATE_DIR, 'data')
 JINJA_MODEL_TEMPLATE_DIR = osp.join(JINJA_TEMPLATE_DIR, 'model')
+JINJA_RUN_TEMPLATE_DIR = osp.join(JINJA_TEMPLATE_DIR, 'run_configurations')
 
 _SUPPORTED_MODELS = [
     {'template_name': 'naive_bayes',    'class_name': 'NaiveBayes'},

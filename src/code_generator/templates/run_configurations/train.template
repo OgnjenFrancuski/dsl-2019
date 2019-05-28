@@ -1,0 +1,25 @@
+{% for train_conf in train_confs %}
+def train_{{train_conf.name}}(data):
+    models = []
+    {% for model in models %}
+    {% if model.name in train_conf.models %}
+    {% if model.cv_folds %}
+    model.params['cv_folds'] = model.cv_folds
+    {% endif %}
+    {% endif %}
+    model = {{model.type}}(model.params)
+    model.fit(X_train, y_train)
+    models.append(model)
+    {% if config.X_val and config.y_val %}
+    model.evaluate(y_val, model.predict(X_val))
+    {% endif %}
+    {% endfor %}
+    return models
+{% endfor %}
+
+
+if __name__ == '__main__':
+    {% for train_conf in train_confs %}
+    {{train_conf.data}} = read_data_{{train_conf.data}}()
+    models_{{train_conf.name}} = train_{{train_conf.name}}({{train_conf.data}})
+    {% endfor %}

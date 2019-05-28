@@ -41,13 +41,31 @@ class ModelWrapper(object):
 
 
 class Stacking(object):
-    pass
+    """
+    Class represents stacking used in grammar
+    """
+    def __init__(self, name, input_models, output_model):
+        self.name = name
+        self.input_models = input_models
+        self.output_model = output_model
 
 
 class Train(object):
-    pass
+    """
+    Class represents training configuration used in grammar
+    """
+    def __init__(self, name, data, models, verbose=2, seed=14):
+        self.name = name
+        self.data = data
+        self.models = models
+        self.verbose = verbose
+        self.seed = seed
 
 
 class Test(object):
-    pass
-
+    """
+    Class represents testing configuration used in grammar
+    """
+    def __init__(self, data, models):
+        self.data = data
+        self.models = models
