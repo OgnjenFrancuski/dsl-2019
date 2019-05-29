@@ -10,7 +10,7 @@ def get_meta_model():
     """
     Builds and returns a meta-model for language.
     """
-    mm = metamodel_from_file(file_name=GRAMMAR_FILE_PATH, classes=[Data, ModelWrapper, Model, Stacking])
+    mm = metamodel_from_file(file_name=GRAMMAR_FILE_PATH, classes=[Data, ModelWrapper, Model, Stacking, Train, Test])
     return mm
 
 
@@ -31,4 +31,5 @@ def main(file_path):
 
 
 if __name__ == "__main__":
-    main('/home/milos/PycharmProjects/fax/dsl-2019/src/grammar/grammar.tx')
+    # main('/home/milos/PycharmProjects/fax/dsl-2019/src/grammar/grammar.tx')
+    main(r'D:\Fax\DSL\dsl-2019\src\grammar\grammar_test.rbt')

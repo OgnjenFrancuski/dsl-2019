@@ -85,3 +85,21 @@ ModelWrapper w3
     input_size=300;
     output=ALL;
 }
+
+Stacking s1
+{
+    input_models = [xg4, w1];
+    output_model = w2;
+}
+
+Train t1
+{
+    data = data2;
+    models = [xg2, xg3, s1];
+}
+
+Test tt1
+{
+    data = data2;
+    models = [xg3, w2, s1];
+}

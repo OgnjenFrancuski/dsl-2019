@@ -44,9 +44,11 @@ class Stacking(object):
     """
     Class represents stacking used in grammar
     """
-    def __init__(self, name, input_models, output_model):
+    def __init__(self, parent, name, input_models, output_model):
+        self.parent = parent
+        self.type = 'ModelStacking'
         self.name = name
-        self.input_models = input_models
+        self.input_models = input_models.num
         self.output_model = output_model
 
 
@@ -54,10 +56,11 @@ class Train(object):
     """
     Class represents training configuration used in grammar
     """
-    def __init__(self, name, data, models, verbose=2, seed=14):
+    def __init__(self, parent, name, data, models, verbose=2, seed=14):
+        self.parent = parent
         self.name = name
         self.data = data
-        self.models = models
+        self.models = models.num
         self.verbose = verbose
         self.seed = seed
 
@@ -66,6 +69,9 @@ class Test(object):
     """
     Class represents testing configuration used in grammar
     """
-    def __init__(self, data, models):
+    def __init__(self, parent, name, data, models):
+        self.parent = parent
+        self.name = name
         self.data = data
-        self.models = models
+        self.models = models.num
+        self.model_names = []

@@ -41,6 +41,81 @@ def update_wrapper_references(models, wrappers):
                 wrappers[wi].model = models[mi]
 
 
+def update_stacking_references(models, stackings):
+    matrix = np.zeros((len(stackings), len(models)))
+
+    for si, s in enumerate(stackings):
+        for mi, m in enumerate(models):
+            if m.name in s.input_models:
+                matrix[si][mi] += 1
+            if m.name == s.output_model:
+                s.output_model = m
+
+    for si in range(0, matrix.shape[0]):
+        stackings[si].input_models = []
+        for mi in range(0, matrix.shape[1]):
+            if matrix[si][mi] > 0:
+                stackings[si].input_models.append(models[mi])
+
+
+def update_train_references(data, models, stackings, train_configurations):
+    models_matrix = np.zeros((len(train_configurations), len(models)))
+    stackings_matrix = np.zeros((len(train_configurations), len(stackings)))
+
+    for ti, t in enumerate(train_configurations):
+        for si, s in enumerate(stackings):
+            if s.name in t.models:
+                stackings_matrix[ti][si] += 1
+        for mi, m in enumerate(models):
+            if m.name in t.models:
+                models_matrix[ti][mi] += 1
+        for d in data:
+            if d.name == t.data:
+                t.data = d
+
+    for ti in range(models_matrix.shape[0]):
+        train_configurations[ti].models = []
+        for si in range(0, stackings_matrix.shape[1]):
+            if stackings_matrix[ti][si] > 0:
+                train_configurations[ti].models.append(stackings[si])
+        for mi in range(0, models_matrix.shape[1]):
+            if models_matrix[ti][mi] > 0:
+                train_configurations[ti].models.append(models[mi])
+
+
+def update_test_references(data, models, stackings, wrappers, test_configurations):
+    models_matrix = np.zeros((len(test_configurations), len(models)))
+    stackings_matrix = np.zeros((len(test_configurations), len(stackings)))
+    wrappers_matrix = np.zeros((len(test_configurations), len(wrappers)))
+
+    for ti, t in enumerate(test_configurations):
+        for si, s in enumerate(stackings):
+            if s.name in t.models:
+                stackings_matrix[ti][si] += 1
+                t.model_names.append(s.name)
+        for mi, m in enumerate(models):
+            if m.name in t.models:
+                models_matrix[ti][mi] += 1
+                t.model_names.append(m.name)
+        for wi, w in enumerate(wrappers):
+            if w.name in t.models:
+                wrappers_matrix[ti][wi] += 1
+                t.model_names.append(w.name)
+        for d in data:
+            if d.name == t.data:
+                t.data = d
+
+    for ti in range(models_matrix.shape[0]):
+        test_configurations[ti].models = []
+        for si in range(0, stackings_matrix.shape[1]):
+            if stackings_matrix[ti][si] > 0:
+                test_configurations[ti].models.append(stackings[si])
+        for mi in range(0, models_matrix.shape[1]):
+            if models_matrix[ti][mi] > 0:
+                test_configurations[ti].models.append(models[mi])
+        for wi in range(0, wrappers_matrix.shape[1]):
+            if models_matrix[ti][wi] > 0:
+                test_configurations[ti].models.append(wrappers[wi])
 
 def analyze_code(grammar_model):
 
@@ -88,10 +163,13 @@ def update_references(grammar_model):
             stackings.append(gm)
 
     for gm in grammar_model.run_expressions:
-        if gm._tx_fqn == 'grammar.Train':
+        if isinstance(gm, Train):
             train_confs.append(gm)
-        if gm._tx_fqn == 'grammar.Test':
+        if isinstance(gm, Test):
             test_confs.append(gm)
 
     update_wrapper_references(models, wrappers)
+    update_stacking_references(models, stackings)
+    update_train_references(data, models, stackings, train_confs)
+    update_test_references(data, models, stackings, wrappers, test_confs)
     return data, models, wrappers, stackings, train_confs, test_confs

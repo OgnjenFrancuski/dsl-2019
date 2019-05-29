@@ -99,7 +99,7 @@ Test:
     'Test' name=ID
     '{'
         (
-            ('data' '='         test_x=ID   ';') |
+            ('data' '='         data=ID   ';') |
             ('models' '='       models=List ';')
         )#
     '}'

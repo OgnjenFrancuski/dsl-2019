@@ -1,24 +1,46 @@
 class ModelStacking:
-    def ___init__(input_models, output_model):
+    def ___init__(self, input_models, output_model):
         self.input_models = input_models
-        self.output_models = output_models
+        self.output_model = output_model
 
-    def fit(X, y):
+    def fit(self, X_train, y_train):
+        self.lab2idx = {lab: idx for idx, lab in enumerate(np.unique(y_train))}
+        self.idx2lab = {idx: lab for lab, idx in self.lab2idx.items()}
+        y_train = np.array(list(map(lambda y: self.lab2idx[y], y_train)))
+
         input_predicted = []
         for input_model in self.input_models:
-            input_model.fit(X, y)
-            y_pred = np.array(list(map(lambda y: input_model.lab2idx[y], y_pred)))
+            input_model.fit(X_train, y_train)
+            y_pred = np.array(list(map(lambda y: input_model.lab2idx[y], input_model.predict(X_train))))
             input_predicted.append(pd.Series(y_pred))
 
         output_train_df = pd.DataFrame(input_predicted, axis=1)
-        output_model.fit(output_train_df)
+        self.output_model.fit(output_train_df)
 
 
-    def predict(X, y):
+    def predict(self, X):
         input_predicted = []
         for input_model in self.input_models:
-            y_pred = np.array(list(map(lambda y: input_model.lab2idx[y], y_pred)))
+            y_pred = np.array(list(map(lambda y: input_model.lab2idx[y], input_model.predict(X))))
             input_predicted.append(pd.Series(y_pred))
 
         output_train_df = pd.DataFrame(input_predicted, axis=1)
-        output_model.fit(output_train_df)
+        self.output_model.fit(output_train_df)
+
+
+    def evaluate(self, y, y_predicted):
+        y = np.array(list(map(lambda y: self.lab2idx[y], y)))
+        y_predicted = np.array(list(map(lambda y: self.lab2idx[y], y_predicted)))
+
+        report = classification_report(y, y_predicted,
+                                       labels=list(self.idx2lab.keys()),
+                                       target_names=list(self.idx2lab.values()))
+
+        print('report')
+        print(report)
+
+        f1 = f1_score(y, y_predicted, average='micro')
+        print('Model achieved {} F-measure score.'.format(f1))
+        print('*' * 80)
+
+        return f1

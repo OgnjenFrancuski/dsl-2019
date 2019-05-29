@@ -96,10 +96,24 @@ def generate_wrapper_code(wrappers):
 
 
 def generate_stacking_code(stacking_expressions):
-    pass
+    if not stacking_expressions:
+        return
+
+    jinja_env = jinja2.Environment(
+        loader=jinja2.FileSystemLoader(JINJA_MODEL_TEMPLATE_DIR),
+        trim_blocks=True,
+        lstrip_blocks=True)
+
+    import_tmpl = jinja_env.get_template('imports.template')
+    stacking_tmpl = jinja_env.get_template('stacking.template')
+
+    with open(osp.join(OUTPUT_DIR, 'stacking.py'), 'w') as f:
+        f.write(import_tmpl.render())
+        f.write('\n\n\n')
+        f.write(stacking_tmpl.render())
 
 
-def generate_train_conf_code(models, stackings, train_confs):
+def generate_run_conf_code(models, stackings, wrappers, train_confs, test_confs, data):
     if not (train_confs and (models or stackings)):
         return
 
@@ -109,33 +123,14 @@ def generate_train_conf_code(models, stackings, train_confs):
         lstrip_blocks=True)
 
     import_tmpl = jinja_env.get_template('imports.template')
-    train_tmpl = jinja_env.get_template('train.template')
+    train_tmpl = jinja_env.get_template('run.template')
 
-    with open(osp.join(OUTPUT_DIR, 'train.py'), 'w') as f:
+    with open(osp.join(OUTPUT_DIR, 'run.py'), 'w') as f:
         f.write(import_tmpl.render())
         f.write('\n\n\n')
-        f.write(train_tmpl.render(models=models, stackings=stackings, train_confs=train_confs))
+        f.write(train_tmpl.render(models=models, stackings=stackings, train_confs=train_confs,
+                                  test_confs=test_confs, data=data, wrappers=wrappers))
 
-
-def generate_test_conf_code(test_confs):
-    if not test_confs:
-        return
-
-    # jinja_env = jinja2.Environment(
-    #     loader=jinja2.FileSystemLoader(JINJA_MODEL_TEMPLATE_DIR),
-    #     trim_blocks=True,
-    #     lstrip_blocks=True)
-    #
-    # import_tmpl = jinja_env.get_template('imports.template')
-    # wrapper_tmpl = jinja_env.get_template('wrapper.template')
-    #
-    # # outputs for all wrappers
-    # outputs = set(map(lambda w: w.output, stacking_expressions))
-    #
-    # with open(osp.join(OUTPUT_DIR, 'wrapper.py'), 'w') as f:
-    #     f.write(import_tmpl.render())
-    #     f.write('\n\n\n')
-    #     f.write(wrapper_tmpl.render(outputs=outputs))
 
 
 def generate_code(data, models, wrappers, stackings, train_confs, test_confs):
@@ -157,5 +152,4 @@ def generate_code(data, models, wrappers, stackings, train_confs, test_confs):
     generate_model_code(models)
     generate_wrapper_code(wrappers)
     generate_stacking_code(stackings)
-    generate_train_conf_code(models, stackings, train_confs)
-    # generate_test_conf_code(models, stackings, train_confs)
+    generate_run_conf_code(models, stackings, wrappers, train_confs, test_confs, data)
