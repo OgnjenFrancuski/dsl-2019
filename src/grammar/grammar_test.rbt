@@ -1,0 +1,81 @@
+Data data
+{
+    path = '~/PycharmProjects/fax/dsl-2019/dataset.csv';
+    test_size = 0.2;
+    outlier = ISF;
+    missing_values = MEAN;
+    validation_size = 0.4;
+    normalization = Z_SCORE;
+}
+
+Model SomeModel sm1
+{
+    p1 = "str";
+    p2 = 0.4;
+    p3 = 10;
+    a = range(10);
+    b = range(2, 10);
+    c = range(2, 10, 2);
+    l = [[], range(10), 2, 'sdf'];
+}
+
+
+Wrapper w1
+{
+    model = sm1;
+    input_size = 10;
+    output = AVG;
+}
+
+
+Wrapper w2
+{
+    model = SomeModel
+    {
+        p1 = "str";
+        p2 = 0.4;
+        p3 = 10;
+        a = range(10);
+        b = range(2, 10);
+        c = range(2, 10, 2);
+        l = [[], range(10), 2, 'sdf'];
+    };
+    input_size = 10;
+    output = CUSTOM;
+}
+
+
+Stacking s1
+{
+    w1 -> w2;
+    m1 -> m2;
+    m3 -> m4;
+}
+
+
+Train
+{
+    x = data;
+    y = data;
+    models = [sm1, sm2, sm3];
+    score = F1-MICRO;
+    verbose=1;
+    seed=14;
+    cross_validation
+    {
+        folds=5;
+        params
+        {
+            p1=[1,2,3];
+            p2=[1,2,3];
+            p3=[1,2,3];
+        };
+    };
+}
+
+Test
+{
+    x = data;
+    y = data;
+    models = [sm1, sm2, sm3];
+}

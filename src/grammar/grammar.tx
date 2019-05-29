@@ -1,0 +1,197 @@
+// >> FILE =============================================================================================================
+
+File:
+    data_expressions  *= Data              // expressions for loading data
+    model_expressions *= Expression        // expressions for defining models
+    run_expressions *= RunExpression       // run configuration for training / testing
+;
+
+
+Expression:
+    Model | Wrapper | Stacking
+;
+
+
+RunExpression:
+    Train | Test
+;
+
+// << FILE =============================================================================================================
+
+
+
+// >> DATA RULES =======================================================================================================
+
+Data:
+    'Data' name=ID
+    '{'
+        'path' '=' path=STRING ';'
+        (
+            ('test_size' '='        test_size=FLOAT                     ';')? |
+            ('validation_size' '='  validation_size=FLOAT               ';')? |
+            ('missing_values' '='   missing_values=MissingValuesMethod  ';')? |
+            ('normalization' '='    normalization=NormalizationMethod   ';')? |
+            ('outlier' '='          outlier=OutlierRemovalMethod        ';')?
+        )#
+    '}'
+;
+
+// << DATA RULES =======================================================================================================
+
+
+
+// >> MODEL RULES ======================================================================================================
+
+Model:
+  'Model' type=ID name=ID
+  '{'
+        params *= Param
+  '}'
+;
+
+
+Wrapper:
+    'Wrapper' name=ID
+    '{'
+        'model' '='         model=ModelWrapper  ';'
+        'input_size' '='    input_size=INT      ';'
+        'output' '='        output=Output       ';'
+    '}'
+;
+
+
+ModelWrapper:
+    AnonymousModel | ID
+;
+
+
+AnonymousModel:
+    type=ID
+    '{'
+        params *= Param
+    '}'
+;
+
+
+Stacking:
+    'Stacking' name=ID
+    '{'
+        connections *= Connection
+    '}'
+;
+
+
+Connection:
+    first_model=ID '->' second_model=ID ';'
+;
+
+// << MODEL RULES ======================================================================================================
+
+
+
+
+// >> RUN CONFIGURATION RULES===========================================================================================
+
+Train:
+    'Train'
+    '{'
+        (
+            // required attributes for training
+
+            ('x' '='        train_x=ID        ';') |
+            ('y' '='        train_y=ID        ';') |
+            ('models' '='   models=List ';') |
+            ('score' '='    score=Score ';') |
+
+            // optional attributes for training
+
+            ('verbose' '='      verbose=INT   ';')? |
+            ('seed' '='         seed=INT      ';')? |
+            ('cross_validation'
+             '{'
+                 (
+                    ('folds' '=' folds=INT ';') |
+                    ('params' '{' params *= Param '}' ';')
+
+                 )#
+             '}' ';'
+            )?
+        )#
+    '}'
+;
+
+
+Test:
+    'Test'
+    '{'
+        (
+            ('x' '='        test_x=ID   ';') |
+            ('y' '='        test_y=ID   ';') |
+            ('models' '='   models=List ';')
+        )#
+    '}'
+;
+
+
+// << RUN CONFIGURATION RULES ==========================================================================================
+
+
+
+// >> UTILITY RULES ====================================================================================================
+
+Param:
+    name=ID '=' Value ';'
+;
+
+
+Value:
+    Range | List | STRING | FLOAT | INT | ID
+;
+
+
+Range:
+    'range(' (start=INT ',')? stop=INT ')' |
+    'range(' start=INT ',' stop=INT ',' step=INT ')'
+;
+
+
+List:
+    '[' num*=Value[','] ']'
+;
+
+
+Comment:
+  /\/\/.*$/
+;
+
+// << UTILITY RULES ====================================================================================================
+
+
+
+// >> CONSTANTS RULES ==================================================================================================
+
+MissingValuesMethod:
+    'MEAN' | 'MEDIAN'
+;
+
+
+NormalizationMethod:
+    'Z_SCORE' | 'MINMAX'
+;
+
+
+OutlierRemovalMethod:
+    'ISF' | 'LOF'
+;
+
+
+Score:
+    'ACCURACY' | 'F1-MICRO' | 'F1-MACRO'
+;
+
+
+Output:
+    'ALL' | 'AVG' | 'CUSTOM'
+;
+
+// << CONSTANTS RULES ==================================================================================================
