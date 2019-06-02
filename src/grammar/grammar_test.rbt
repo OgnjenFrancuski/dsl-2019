@@ -1,6 +1,6 @@
 Data data
 {
-    path = '~/PycharmProjects/fax/dsl-2019/dataset.csv';
+    path = 'iris.csv';
     test_size = 0.2;
     validation_size = 0.4;
     outlier = ISF;
@@ -11,7 +11,7 @@ Data data
 
 Data data2
 {
-    path = '~/PycharmProjects/fax/dsl-2019/dataset.csv';
+    path = 'iris.csv';
     test_size = 0.1;
     validation_size = 0.3;
     outlier = ISF;
@@ -21,7 +21,7 @@ Data data2
 
 Data pera
 {
-    path = '~/PycharmProjects/fax/dsl-2019/dataset.csv';
+    path = 'iris.csv';
     test_size = 0.2;
     validation_size = 0.5;
     outlier = ISF;
@@ -51,15 +51,20 @@ Model RandomForest rf1
     criterion=['gini', 'entropy'];
 }
 
+Stacking s1
+{
+    input_models=[rf1, xg1];
+    output_model=nb1;
+}
 
 Train t1
 {
     data = data2;
-    models = [xg1, rf1];
+    models = [xg1, rf1, s1];
 }
 
 Test t2
 {
     data = data2;
-    models = [nb1];
+    models = [rf1];
 }

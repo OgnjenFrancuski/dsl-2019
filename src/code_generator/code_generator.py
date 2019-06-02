@@ -136,8 +136,8 @@ def generate_run_conf_code(models, stackings, wrappers, train_confs, test_confs,
     import_tmpl = jinja_env.get_template('imports.template')
     train_tmpl = jinja_env.get_template('run.template')
 
-    with open(osp.join(OUTPUT_DIR, 'run.py'), 'w') as f:
-        f.write(import_tmpl.render())
+    with open(osp.join(OUTPUT_DIR, 'main.py'), 'w') as f:
+        f.write(import_tmpl.render(wrappers=wrappers))
         f.write('\n\n\n')
         f.write(train_tmpl.render(models=models, stackings=stackings, train_confs=train_confs,
                                   test_confs=test_confs, data=data, wrappers=wrappers))

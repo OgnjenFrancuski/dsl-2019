@@ -33,5 +33,6 @@ def main(file_path):
 
 
 if __name__ == "__main__":
-    # main('/home/milos/PycharmProjects/fax/dsl-2019/src/grammar/grammar.tx')
-    main('/home/ognjen/Projects/Fax/DSL/dsl-2019/src/grammar/grammar_test.rbt')
+    # main('/home/milos/PycharmProjects/fax/dsl-2019/src/grammar/grammar_test.rbt')
+    main(r'D:\Fax\DSL\dsl-2019\src\grammar\grammar_test.rbt')
+    # main('/home/ognjen/Projects/Fax/DSL/dsl-2019/src/grammar/grammar_test.rbt')

@@ -1,7 +1,7 @@
 class ModelStacking:
-    def ___init__(self, input_models, output_model):
-        self.input_models = input_models
-        self.output_model = output_model
+    def __init__(self, input_confs, output_conf):
+        self.input_confs = input_confs
+        self.output_conf = output_conf
 
     def fit(self, X_train, y_train):
         self.lab2idx = {lab: idx for idx, lab in enumerate(np.unique(y_train))}
@@ -9,23 +9,24 @@ class ModelStacking:
         y_train = np.array(list(map(lambda y: self.lab2idx[y], y_train)))
 
         input_predicted = []
-        for input_model in self.input_models:
-            input_model.fit(X_train, y_train)
+        for input_conf in self.input_confs:
+            input_model = input_conf['model']
+            input_model.fit(X_train, y_train, **input_conf['fit_params'])
             y_pred = np.array(list(map(lambda y: input_model.lab2idx[y], input_model.predict(X_train))))
             input_predicted.append(pd.Series(y_pred))
 
-        output_train_df = pd.DataFrame(input_predicted, axis=1)
-        self.output_model.fit(output_train_df)
+        output_train_df = pd.concat(input_predicted, axis=1)
+        self.output_conf['model'].fit(output_train_df, y_train)
 
 
     def predict(self, X):
         input_predicted = []
-        for input_model in self.input_models:
-            y_pred = np.array(list(map(lambda y: input_model.lab2idx[y], input_model.predict(X))))
+        for input_conf in self.input_confs:
+            y_pred = input_conf['model'].predict(X)
             input_predicted.append(pd.Series(y_pred))
 
-        output_train_df = pd.DataFrame(input_predicted, axis=1)
-        self.output_model.fit(output_train_df)
+        output_train_df = pd.concat(input_predicted, axis=1)
+        return list(map(lambda y: self.idx2lab[y], self.output_conf['model'].predict(output_train_df)))
 
 
     def evaluate(self, y, y_predicted):

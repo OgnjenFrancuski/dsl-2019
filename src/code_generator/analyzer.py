@@ -56,6 +56,7 @@ def update_stacking_references(models, stackings):
         for mi in range(0, matrix.shape[1]):
             if matrix[si][mi] > 0:
                 stackings[si].input_models.append(models[mi])
+    print()
 
 
 def update_train_references(data, models, stackings, train_configurations):

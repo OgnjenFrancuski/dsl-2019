@@ -48,7 +48,7 @@ class Stacking(object):
         self.parent = parent
         self.type = 'ModelStacking'
         self.name = name
-        self.input_models = input_models.num
+        self.input_models = input_models.collection
         self.output_model = output_model
 
 
