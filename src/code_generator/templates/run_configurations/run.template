@@ -11,7 +11,7 @@ def train_{{train_conf.name}}(X_train, y_train):
     trained_models = {}
     {% for model in train_conf.models %}
     m = {{model.type}}()
-    m.fit(X_train, y_train, {% if model.cv_folds %} use_cv=True, param_grid={'cv_folds':{{model.cv_folds}}, {% for param in model.params %}'{{param.name}}':{{param.value}}, {% endfor %}}{% else %}{% for param in model.params %}{{param.name}}={{param.value}}, {% endfor %}{% endif %})
+    m.fit(X_train, y_train, seed={{train_conf.seed}}, verbose={{train_conf.verbose}}, {% if model.folds %} use_cv=True, folds={{model.folds}}, param_grid={ {% for param in model.params %}'{{param.name}}': {{param.value}}, {% endfor %}}{% else %}{% for param in model.params %}{{param.name}}={{param.value}}, {% endfor %}{% endif %})
     {% if train_conf.data.validation_size %}
     m.evaluate(y_val, m.predict(X_val))
     {% endif %}

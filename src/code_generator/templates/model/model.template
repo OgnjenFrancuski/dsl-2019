@@ -19,13 +19,12 @@ class Model:
             if 'param_grid' not in fit_params or len(fit_params['param_grid']) < 1:
                 raise Exception('Grid with parameters must be initialized')
 
-            scoring = 'f1_micro' if 'scoring' not in fit_params else fit_params['scoring']
             folds = 3 if 'folds' not in fit_params else fit_params['folds']
             verbose = 2 if 'verbose' not in fit_params else fit_params['verbose']
 
             self.grid_search = GridSearchCV(self.model,
                                             param_grid=fit_params['param_grid'],
-                                            scoring=scoring,
+                                            scoring='f1_micro',
                                             n_jobs=-1,
                                             refit=True,
                                             cv=folds,

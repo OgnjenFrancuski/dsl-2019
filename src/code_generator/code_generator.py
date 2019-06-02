@@ -4,7 +4,18 @@ import os.path as osp
 import jinja2
 
 from src.settings import JINJA_DATA_TEMPLATE_DIR, OUTPUT_DIR, JINJA_MODEL_TEMPLATE_DIR, SUPPORTED_MODELS, \
-    JINJA_RUN_TEMPLATE_DIR
+    JINJA_RUN_TEMPLATE_DIR, JINJA_REQUIREMENTS_TEMPLATE_DIR
+
+
+def generate_requirements_code():
+    jinja_env = jinja2.Environment(
+        loader=jinja2.FileSystemLoader(JINJA_REQUIREMENTS_TEMPLATE_DIR),
+        trim_blocks=True,
+        lstrip_blocks=True)
+
+    tmpl = jinja_env.get_template('requirements.template')
+    with open(osp.join(OUTPUT_DIR, 'requirements.txt'), 'w') as f:
+        f.write(tmpl.render())
 
 
 def generate_data_code(data):
@@ -132,7 +143,6 @@ def generate_run_conf_code(models, stackings, wrappers, train_confs, test_confs,
                                   test_confs=test_confs, data=data, wrappers=wrappers))
 
 
-
 def generate_code(data, models, wrappers, stackings, train_confs, test_confs):
     """
     Generates code from given meta model using Jinja templates
@@ -148,6 +158,7 @@ def generate_code(data, models, wrappers, stackings, train_confs, test_confs):
     if not osp.exists(OUTPUT_DIR):
         os.mkdir(OUTPUT_DIR)
 
+    generate_requirements_code()
     generate_data_code(data)
     generate_model_code(models)
     generate_wrapper_code(wrappers)

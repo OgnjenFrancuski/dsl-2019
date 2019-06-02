@@ -20,12 +20,12 @@ class Model(object):
     """
     Class represent rule model used in grammar
     """
-    def __init__(self, parent, type, name, cv_folds, params):
+    def __init__(self, parent, type, name, folds, params):
         self.parent = parent
         self.type = type
         self.name = name
         self.params = params
-        self.cv_folds = cv_folds if cv_folds > 1 else None
+        self.folds = folds if folds > 1 else None
 
 
 class ModelWrapper(object):
@@ -56,11 +56,11 @@ class Train(object):
     """
     Class represents training configuration used in grammar
     """
-    def __init__(self, parent, name, data, models, verbose=2, seed=14):
+    def __init__(self, parent, name, data, models, verbose, seed):
         self.parent = parent
         self.name = name
         self.data = data
-        self.models = models.num
+        self.models = models.collection
         self.verbose = verbose
         self.seed = seed
 
@@ -73,5 +73,32 @@ class Test(object):
         self.parent = parent
         self.name = name
         self.data = data
-        self.models = models.num
+        self.models = models.collection
         self.model_names = []
+
+
+class List(object):
+    """
+    Class represents List rule used in grammar to represent collection
+    of values
+    """
+    def __init__(self, parent, collection):
+        self.parent = parent
+        self.collection = collection
+
+
+class Param(object):
+    """
+    Class represents Param rule used in grammar
+    """
+    def __init__(self, parent, name, value):
+        self.parent = parent
+        self.name = name
+        self.inner_value = value
+
+
+    @property
+    def value(self):
+        if isinstance(self.inner_value, List):
+            return self.inner_value.collection
+        return self.inner_value

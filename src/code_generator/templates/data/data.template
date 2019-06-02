@@ -6,7 +6,7 @@ def read_data_{{data.name}}():
     """
     label_col = '{{data.label_column}}'
 
-    df = pd.read_csv('{{data.file_path}}')
+    df = pd.read_csv('{{data.path}}')
     {% if data.missing_values %}
     df = _missing_values(df, label_col, method='{{data.missing_values.lower()}}')
     {% endif %}

@@ -47,7 +47,7 @@ Data:
 Model:
     'Model' type=ID name=ID
     '{'
-        ('cv_folds' '=' cv_folds=INT)?
+        ('folds' '=' folds=INT ';')?
         params*=Param
     '}'
 ;
@@ -113,12 +113,7 @@ Test:
 // >> UTILITY RULES ====================================================================================================
 
 Param:
-    name=ID '=' value=SimpleValue ';'
-;
-
-
-CvParam:
-    name=ID '=' value=CollectionValue ';'
+    name=ID '=' (value=SimpleValue | value=CollectionValue) ';'
 ;
 
 
@@ -139,7 +134,7 @@ Range:
 
 
 List:
-    '[' num*=SimpleValue[','] ']'
+    '[' collection*=SimpleValue[','] ']'
 ;
 
 
@@ -171,11 +166,6 @@ NormalizationMethod:
 
 OutlierRemovalMethod:
     'ISF' | 'LOF'
-;
-
-
-Score:
-    'ACCURACY' | 'F1-MICRO' | 'F1-MACRO'
 ;
 
 
