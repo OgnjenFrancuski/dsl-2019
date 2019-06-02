@@ -1,0 +1,82 @@
+{% for train_conf in train_confs %}
+{% if train_conf.data.test_size %}
+{% if train_conf.data.validation_size %}
+def train_configuration_{{train_conf.name}}(X_train, X_val, y_train, y_val):
+{% else %}
+def train_configuration_{{train_conf.name}}(X_train, y_train):
+{% endif %}
+{% else %}
+def train_configuration_{{train_conf.name}}(X_train, y_train):
+{% endif %}
+    """
+        Function for training models
+        Auto generated code
+    """
+    trained_models = {}
+    {% for model in train_conf.models %}
+    {% if model.input_models %}
+    input_conf = [{% for input_conf in model.input_models %}{'model': {{input_conf.type}}(), 'fit_params': {'seed':{{train_conf.seed}}, 'verbose':{{train_conf.verbose}}, {% if input_conf.folds %} 'use_cv':True, 'folds':{{input_conf.folds}}, 'param_grid':{ {% for param in input_conf.params %}'{{param.name}}': {{param.value}}, {% endfor %}}{% else %}{% for param in input_conf.params %}{{param.name}}={{param.value}}, {% endfor %}{% endif %}} },
+    {% endfor %} ]
+    output_conf = {'model': {{model.output_model.type}}(), 'fit_params': {'seed':{{train_conf.seed}}, 'verbose':{{train_conf.verbose}}, {% if model.output_model.folds %} 'use_cv':True, 'folds':{{model.output_model.folds}}, 'param_grid':{ {% for param in model.output_model.params %}'{{param.name}}': {{param.value}}, {% endfor %}}{% else %}{% for param in model.output_model.params %}{{param.name}}={{param.value}}, {% endfor %}{% endif %}} }
+    m = {{model.type}}(input_conf, output_conf)
+    m.fit(X_train, y_train)
+    {% else %}
+    m = {{model.type}}()
+    m.fit(X_train, y_train, seed={{train_conf.seed}}, verbose={{train_conf.verbose}}, {% if model.folds %} use_cv=True, folds={{model.folds}}, param_grid={ {% for param in model.params %}'{{param.name}}': {{param.value}}, {% endfor %}}{% else %}{% for param in model.params %}{{param.name}}={{param.value}}, {% endfor %}{% endif %})
+    {% endif %}
+    {% if train_conf.data.validation_size %}
+    m.evaluate(y_val, m.predict(X_val))
+    {% endif %}
+    trained_models['{{model.name}}'] = m
+    {% endfor %}
+    return trained_models
+{% endfor %}
+
+
+def test_configuration(models, X_test, y_test):
+    """
+        Function for testing models
+        Auto generated code
+    """
+    for model in models:
+        model.evaluate(y_test, model.predict(X_test))
+
+
+def main():
+    """
+        Main function for training and testing models
+        Auto generated code
+    """
+    models = {}
+    {% for train_conf in train_confs %}
+    {% if train_conf.data.test_size %}
+    {% if train_conf.data.validation_size %}
+    {{train_conf.data.name}}_X_train, {{train_conf.data.name}}_X_val, {{train_conf.data.name}}_X_test, {{train_conf.data.name}}_y_train, {{train_conf.data.name}}_y_val, {{train_conf.data.name}}_y_test = read_data_{{train_conf.data.name}}()
+    models_{{train_conf.name}} = train_configuration_{{train_conf.name}}({{train_conf.data.name}}_X_train, {{train_conf.data.name}}_X_val, {{train_conf.data.name}}_y_train, {{train_conf.data.name}}_y_val)
+
+    {% else %}
+    {{train_conf.data.name}}_X_train, {{train_conf.data.name}}_X_test, {{train_conf.data.name}}_y_train, {{train_conf.data.name}}_y_test = read_data_{{train_conf.data.name}}()
+    models_{{train_conf.name}} = train_configuration_{{train_conf.name}}({{train_conf.data.name}}_X_train, {{train_conf.data.name}}_y_train)
+
+    {% endif %}
+    {% else %}
+    {{train_conf.data.name}}_X_train, {{train_conf.data.name}}_y_train = read_data_{{train_conf.data.name}}()
+    models_{{train_conf.name}} = train_configuration_{{train_conf.name}}({{train_conf.data.name}}_X_train, {{train_conf.data.name}}_y_train)
+
+    {% endif %}
+    for k, v in models_{{train_conf.name}}.items():
+        models[k] = v
+    {% endfor %}
+    {% for w in wrappers %}
+    models['{{w.name}}'] = ModelWrapper(models['{{w.model.name}}'], {{w.input_size}})
+    {% endfor %}
+    {% for test_conf in test_confs %}
+    {{test_conf.name}}_model_names = {{test_conf.model_names}}
+    {{test_conf.name}}_models = map(lambda model_name: models[model_name], {{test_conf.name}}_model_names)
+    test_configuration({{test_conf.name}}_models, {{test_conf.data.name}}_X_test, {{test_conf.data.name}}_y_test)
+
+    {% endfor %}
+
+
+if __name__ == '__main__':
+    main()

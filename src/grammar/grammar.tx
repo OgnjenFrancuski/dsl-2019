@@ -1,0 +1,176 @@
+// >> FILE =============================================================================================================
+
+File:
+    data_expressions *= Data                 // expression for loading and preprocessing data
+    model_expressions *= Expression          // expressions for defining models
+    run_expressions *= RunExpression         // run configuration for training / testing
+;
+
+
+Expression:
+    ModelWrapper | Model | Stacking
+;
+
+
+RunExpression:
+    Train | Test
+;
+
+// << FILE =============================================================================================================
+
+
+
+// >> DATA RULES =======================================================================================================
+
+Data:
+    'Data' name=ID
+    '{'
+        (
+            ('path' '='             path=STRING                         ';')  |
+            ('label_column' '='     label_column=STRING                 ';')  |
+            ('test_size' '='        test_size=FLOAT                     ';')? |
+            ('validation_size' '='  validation_size=FLOAT               ';')? |
+            ('missing_values' '='   missing_values=MissingValuesMethod  ';')? |
+            ('normalization' '='    normalization=NormalizationMethod   ';')? |
+            ('outlier' '='          outlier=OutlierRemovalMethod        ';')?
+        )#
+    '}'
+;
+
+// << DATA RULES =======================================================================================================
+
+
+
+// >> MODEL RULES ======================================================================================================
+
+
+Model:
+    'Model' type=ID name=ID
+    '{'
+        ('folds' '=' folds=INT ';')?
+        params*=Param
+    '}'
+;
+
+
+ModelWrapper:
+    'ModelWrapper' name=ID
+    '{'
+        'model' '='         model=ID        ';'
+        'input_size' '='    input_size=INT  ';'
+        'output' '='        output=Output   ';'
+    '}'
+;
+
+Stacking:
+    'Stacking' name=ID
+    '{'
+        'input_models' '=' input_models=List    ';'
+        'output_model' '=' output_model=ID      ';'
+    '}'
+;
+
+// << MODEL RULES ======================================================================================================
+
+
+
+
+// >> RUN CONFIGURATION RULES===========================================================================================
+
+Train:
+    'Train' name=ID
+    '{'
+        (
+            // required attributes for training
+
+            ('data' '='     data=ID         ';') |
+            ('models' '='   models=List     ';') |
+
+            // optional attributes for training
+
+            ('verbose' '='      verbose=INT   ';')? |
+            ('seed' '='         seed=INT      ';')?
+        )#
+    '}'
+;
+
+
+Test:
+    'Test' name=ID
+    '{'
+        (
+            ('data' '='         data=ID   ';') |
+            ('models' '='       models=List ';')
+        )#
+    '}'
+;
+
+
+// << RUN CONFIGURATION RULES ==========================================================================================
+
+
+
+// >> UTILITY RULES ====================================================================================================
+
+Param:
+    name=ID '=' (value=SimpleValue | value=CollectionValue) ';'
+;
+
+
+CollectionValue:
+    Range | List
+;
+
+
+SimpleValue:
+     STRING | FLOAT | INT | ID
+;
+
+
+Range:
+    'range(' (start=INT ',')? stop=INT ')' |
+    'range(' start=INT ',' stop=INT ',' step=INT ')'
+;
+
+
+List:
+    '[' collection*=SimpleValue[','] ']'
+;
+
+
+Comment:
+  /\/\/.*$/
+;
+
+// << UTILITY RULES ====================================================================================================
+
+
+
+// >> CONSTANTS RULES ==================================================================================================
+
+MissingValuesMethod:
+    'MEAN'                      |
+    'MEDIAN'                    |
+    'KNN'                       |
+    'NUCLEAR_NORM_MINIMIZATION' |
+    'SOFT'                      |
+    'ITERATIVE'                 |
+    'BI_SCALER'
+;
+
+
+NormalizationMethod:
+    'Z_SCORE' | 'MINMAX'
+;
+
+
+OutlierRemovalMethod:
+    'ISF' | 'LOF'
+;
+
+
+Output:
+    'ALL' | 'VOTING' | 'CUSTOM'
+;
+
+// << CONSTANTS RULES ==================================================================================================

@@ -1,0 +1,59 @@
+class Model:
+
+    def __init__(self):
+        self.grid_search = None
+        self.lab2idx = None
+        self.idx2lab = None
+
+
+    def fit(self, x_train, y_train, **fit_params):
+
+        self.lab2idx = {lab: idx for idx, lab in enumerate(np.unique(y_train))}
+        self.idx2lab = {idx: lab for lab, idx in self.lab2idx.items()}
+        y_train = np.array(list(map(lambda y: self.lab2idx[y], y_train)))
+
+        use_cv = False if 'use_cv' not in fit_params else fit_params['use_cv']
+
+        if use_cv:
+
+            if 'param_grid' not in fit_params or len(fit_params['param_grid']) < 1:
+                raise Exception('Grid with parameters must be initialized')
+
+            folds = 3 if 'folds' not in fit_params else fit_params['folds']
+            verbose = 2 if 'verbose' not in fit_params else fit_params['verbose']
+
+            self.grid_search = GridSearchCV(self.model,
+                                            param_grid=fit_params['param_grid'],
+                                            scoring='f1_micro',
+                                            n_jobs=-1,
+                                            refit=True,
+                                            cv=folds,
+                                            verbose=verbose)
+            self.grid_search.fit(x_train, y_train)
+            self.model = self.grid_search.best_estimator_
+        else:
+            self.model.fit(x_train, y_train)
+
+
+    def predict(self, inputs):
+        y_pred = self.model.predict(inputs)
+        y_pred = np.array(list(map(lambda y: self.idx2lab[y], y_pred)))
+        return y_pred
+
+
+    def evaluate(self, y, y_predicted):
+        y = np.array(list(map(lambda y: self.lab2idx[y], y)))
+        y_predicted = np.array(list(map(lambda y: self.lab2idx[y], y_predicted)))
+
+        report = classification_report(y, y_predicted,
+                                       labels=list(self.idx2lab.keys()),
+                                       target_names=list(self.idx2lab.values()))
+
+        print('report')
+        print(report)
+
+        f1 = f1_score(y, y_predicted, average='micro')
+        print('Model achieved {} F-measure score.'.format(f1))
+        print('*' * 80)
+
+        return f1

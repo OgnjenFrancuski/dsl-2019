@@ -1,0 +1,70 @@
+Data data
+{
+    path = 'iris.csv';
+    test_size = 0.2;
+    validation_size = 0.4;
+    outlier = ISF;
+    missing_values = KNN;
+    label_column = 'variety';
+}
+
+
+Data data2
+{
+    path = 'iris.csv';
+    test_size = 0.1;
+    validation_size = 0.3;
+    outlier = ISF;
+    missing_values = MEAN;
+    label_column = 'variety';
+}
+
+Data pera
+{
+    path = 'iris.csv';
+    test_size = 0.2;
+    validation_size = 0.5;
+    outlier = ISF;
+    missing_values = MEDIAN;
+    label_column = 'variety';
+}
+
+Model NaiveBayes nb1
+{
+    folds=3;
+    alpha=[0.01, 0.05, 0.1];
+}
+
+
+Model XGBoost xg1
+{
+    folds=3;
+    learning_rate=[0.1];
+    max_depth=[3, 4];
+    subsample=[0.8];
+}
+
+Model RandomForest rf1
+{
+    folds=3;
+    n_estimators=[10,20];
+    criterion=['gini', 'entropy'];
+}
+
+Stacking s1
+{
+    input_models=[rf1, xg1];
+    output_model=nb1;
+}
+
+Train t1
+{
+    data = data2;
+    models = [xg1, rf1, s1];
+}
+
+Test t2
+{
+    data = data2;
+    models = [rf1];
+}

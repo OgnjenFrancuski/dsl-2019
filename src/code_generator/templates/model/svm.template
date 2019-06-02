@@ -1,0 +1,4 @@
+class SVM(Model):
+    def __init__(self, **model_params):
+        super(SVM, self).__init__()
+        self.model = SVC(**model_params)
