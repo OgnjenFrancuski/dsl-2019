@@ -1,0 +1,4 @@
+class NaiveBayes(Model):
+    def __init__(self, **model_params):
+        super(NaiveBayes, self).__init__()
+        self.model = MultinomialNB(**model_params)

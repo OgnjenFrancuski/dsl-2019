@@ -1,14 +1,14 @@
 // >> FILE =============================================================================================================
 
 File:
-    data_expressions  *= Data              // expressions for loading data
-    model_expressions *= Expression        // expressions for defining models
-    run_expressions *= RunExpression       // run configuration for training / testing
+    data_expressions *= Data                 // expression for loading and preprocessing data
+    model_expressions *= Expression          // expressions for defining models
+    run_expressions *= RunExpression         // run configuration for training / testing
 ;
 
 
 Expression:
-    Model | Wrapper | Stacking
+    ModelWrapper | Model | Stacking
 ;
 
 
@@ -25,8 +25,9 @@ RunExpression:
 Data:
     'Data' name=ID
     '{'
-        'path' '=' path=STRING ';'
         (
+            ('path' '='             path=STRING                         ';')  |
+            ('label_column' '='     label_column=STRING                 ';')  |
             ('test_size' '='        test_size=FLOAT                     ';')? |
             ('validation_size' '='  validation_size=FLOAT               ';')? |
             ('missing_values' '='   missing_values=MissingValuesMethod  ';')? |
@@ -42,47 +43,31 @@ Data:
 
 // >> MODEL RULES ======================================================================================================
 
+
 Model:
-  'Model' type=ID name=ID
-  '{'
-        params *= Param
-  '}'
-;
-
-
-Wrapper:
-    'Wrapper' name=ID
+    'Model' type=ID name=ID
     '{'
-        'model' '='         model=ModelWrapper  ';'
-        'input_size' '='    input_size=INT      ';'
-        'output' '='        output=Output       ';'
+        ('cv_folds' '=' cv_folds=INT)?
+        params*=Param
     '}'
 ;
 
 
 ModelWrapper:
-    AnonymousModel | ID
-;
-
-
-AnonymousModel:
-    type=ID
+    'ModelWrapper' name=ID
     '{'
-        params *= Param
+        'model' '='         model=ID        ';'
+        'input_size' '='    input_size=INT  ';'
+        'output' '='        output=Output   ';'
     '}'
 ;
-
 
 Stacking:
     'Stacking' name=ID
     '{'
-        connections *= Connection
+        'input_models' '=' input_models=List    ';'
+        'output_model' '=' output_model=ID      ';'
     '}'
-;
-
-
-Connection:
-    first_model=ID '->' second_model=ID ';'
 ;
 
 // << MODEL RULES ======================================================================================================
@@ -93,41 +78,29 @@ Connection:
 // >> RUN CONFIGURATION RULES===========================================================================================
 
 Train:
-    'Train'
+    'Train' name=ID
     '{'
         (
             // required attributes for training
 
-            ('x' '='        train_x=ID        ';') |
-            ('y' '='        train_y=ID        ';') |
-            ('models' '='   models=List ';') |
-            ('score' '='    score=Score ';') |
+            ('data' '='     data=ID         ';') |
+            ('models' '='   models=List     ';') |
 
             // optional attributes for training
 
             ('verbose' '='      verbose=INT   ';')? |
-            ('seed' '='         seed=INT      ';')? |
-            ('cross_validation'
-             '{'
-                 (
-                    ('folds' '=' folds=INT ';') |
-                    ('params' '{' params *= Param '}' ';')
-
-                 )#
-             '}' ';'
-            )?
+            ('seed' '='         seed=INT      ';')?
         )#
     '}'
 ;
 
 
 Test:
-    'Test'
+    'Test' name=ID
     '{'
         (
-            ('x' '='        test_x=ID   ';') |
-            ('y' '='        test_y=ID   ';') |
-            ('models' '='   models=List ';')
+            ('data' '='         data=ID   ';') |
+            ('models' '='       models=List ';')
         )#
     '}'
 ;
@@ -140,12 +113,22 @@ Test:
 // >> UTILITY RULES ====================================================================================================
 
 Param:
-    name=ID '=' Value ';'
+    name=ID '=' value=SimpleValue ';'
 ;
 
 
-Value:
-    Range | List | STRING | FLOAT | INT | ID
+CvParam:
+    name=ID '=' value=CollectionValue ';'
+;
+
+
+CollectionValue:
+    Range | List
+;
+
+
+SimpleValue:
+     STRING | FLOAT | INT | ID
 ;
 
 
@@ -156,7 +139,7 @@ Range:
 
 
 List:
-    '[' num*=Value[','] ']'
+    '[' num*=SimpleValue[','] ']'
 ;
 
 
@@ -171,7 +154,13 @@ Comment:
 // >> CONSTANTS RULES ==================================================================================================
 
 MissingValuesMethod:
-    'MEAN' | 'MEDIAN'
+    'MEAN'                      |
+    'MEDIAN'                    |
+    'KNN'                       |
+    'NUCLEAR_NORM_MINIMIZATION' |
+    'SOFT'                      |
+    'ITERATIVE'                 |
+    'BI_SCALER'
 ;
 
 
@@ -191,7 +180,7 @@ Score:
 
 
 Output:
-    'ALL' | 'AVG' | 'CUSTOM'
+    'ALL' | 'VOTING' | 'CUSTOM'
 ;
 
 // << CONSTANTS RULES ==================================================================================================

@@ -1,1 +1,3 @@
 textX==1.8.0
+Jinja2==2.10.1
+numpy
